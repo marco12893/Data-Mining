@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Insights Klaster Pengguna</h1>
+
+    <h3>Elbow Method (Optimal Clusters)</h3>
+    <img src="data:image/png;base64,{{ plot_url }}" alt="Elbow Method Graph">
+
+    <h3>K-Means Clustering Results</h3>
+    <img src="data:image/png;base64,{{ cluster_plot_url }}" alt="Clustering Results">
+
+    <a href="/">Kembali ke Home</a>
+{% endblock %}
