@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Clustering Evaluation</h2>
+    <p><strong>Optimal Number of Clusters:</strong> {{ optimal_clusters }}</p>
+    <p><strong>Silhouette Score:</strong> {{ evaluation['Silhouette Score'] }}</p>
+    <p><strong>SSE:</strong></p>
+    <ul>
+        {% for sse_value in evaluation['SSE'] %}
+            <li>{{ sse_value }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Elbow Method (Optimal Number of Clusters)</h2>
+    <img src="data:image/png;base64,{{ plot_url }}" alt="Elbow Method Plot" />
+
+    <h2>Clustering Results</h2>
+    <img src="data:image/png;base64,{{ cluster_plot_url }}" alt="Clustering Scatter Plot" />
+
+{% endblock %}

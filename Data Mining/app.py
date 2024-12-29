@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import io
 import base64
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import silhouette_score
 
 app = Flask(__name__)
 df = pd.read_csv('user_behavior_dataset.csv')
@@ -21,76 +23,88 @@ def about():
     print("Flask app running...")
     return render_template('base.html', title="About", header="About Flask")
 
-@app.route('/clustering')
+@app.route('/cluster')
 def cluster():
+    # 1. Definisikan kolom yang akan dinormalisasi
     columns_to_transform = ['App Usage Time (min/day)', 'Screen On Time (hours/day)',
-                            'Battery Drain (mAh/day)', 'Data Usage (MB/day)']
-    numeric_columns = columns_to_transform + ['Number of Apps Installed', 'Age']
+                            'Battery Drain (mAh/day)', 'Data Usage (MB/day)',
+                            'Number of Apps Installed', 'Age']
 
-    # 1. Logarithmic Transformation
-    for col in columns_to_transform:
-        df[f'{col}_log'] = np.log1p(df[col])  # log1p handles zero values
+    # 2. Min-Max Normalization (skala 1-10)
+    scaler = MinMaxScaler(feature_range=(1, 10))
+    df_normalized = pd.DataFrame(
+        scaler.fit_transform(df[columns_to_transform]),
+        columns=columns_to_transform
+    )
 
-    # 2. Scaling with StandardScaler
-    scaler = StandardScaler()
-    df_scaled = pd.DataFrame(
-        scaler.fit_transform(df[[f'{col}_log' for col in columns_to_transform] + ['Number of Apps Installed', 'Age']]),
-        columns=[f'{col}_log' for col in columns_to_transform] + ['Number of Apps Installed', 'Age'])
-
-    # 3. (Optional) Dimensionality Reduction with PCA or UMAP
-    pca = PCA(n_components=2)
-    X_pca = pca.fit_transform(df_scaled)
-    df['PCA1'], df['PCA2'] = X_pca[:, 0], X_pca[:, 1]
-    X_normalized = df_scaled  # Menggunakan data yang sudah dinormalisasi
-
-    # 2. Determine the Optimal Number of Clusters using the Elbow Method
+    # 3. Menentukan jumlah cluster optimal menggunakan Elbow Method
     sse = []  # Sum of Squared Errors
     max_clusters = 10
 
     for n_clusters in range(1, max_clusters + 1):
         kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-        kmeans.fit(X_normalized)
+        kmeans.fit(df_normalized)
         sse.append(kmeans.inertia_)
 
     # Plot Elbow Method
     plt.figure(figsize=(8, 5))
-    plt.plot(range(1, max_clusters + 1), sse, marker='o', linestyle='--')
+    plt.plot(range(1, max_clusters + 1, 1), sse, marker='o', linestyle='--')
     plt.xlabel('Number of Clusters')
     plt.ylabel('Sum of Squared Errors (SSE)')
     plt.title('Elbow Method for Optimal Number of Clusters')
-    plt.grid()
+    plt.grid(True)
 
-    # Save the plot to a BytesIO object and encode it as base64
+    # Simpan plot ke objek BytesIO dan encode ke base64
     img = io.BytesIO()
     plt.savefig(img, format='png')
     img.seek(0)
     plot_url = base64.b64encode(img.getvalue()).decode()
+    plt.close()
 
-    # Apply K-Means Clustering with Optimal Number of Clusters (e.g., k=3)
-    optimal_clusters = 5  # Pilih berdasarkan elbow method
+    # 4. Terapkan K-Means Clustering dengan jumlah cluster optimal (5)
+    optimal_clusters = 5
     kmeans = KMeans(n_clusters=optimal_clusters, random_state=42)
-    df_scaled['Cluster'] = kmeans.fit_predict(X_normalized)
+    df_normalized['Cluster'] = kmeans.fit_predict(df_normalized)
 
-    # Visualize the Clusters (Optional, using PCA for 2D visualization)
+    # 5. Evaluasi dengan Silhouette Score
+    silhouette_avg = silhouette_score(df_normalized, df_normalized['Cluster'])
+    print(f'Silhouette Score: {silhouette_avg}')
+
+    # 6. Reduksi Dimensi dengan PCA untuk Visualisasi
+    pca = PCA(n_components=2)
+    X_pca = pca.fit_transform(df_normalized)
+    df_normalized['PCA1'], df_normalized['PCA2'] = X_pca[:, 0], X_pca[:, 1]
+
+    # 7. Visualisasi Clustering dengan Scatter Plot
     plt.figure(figsize=(8, 5))
-    plt.scatter(df['PCA1'], df['PCA2'], c=df_scaled['Cluster'], cmap='viridis', s=50)
+    scatter = plt.scatter(df_normalized['PCA1'], df_normalized['PCA2'],
+                          c=df_normalized['Cluster'], cmap='viridis', s=50)
     plt.title('K-Means Clustering Results')
     plt.xlabel('PCA1')
     plt.ylabel('PCA2')
-    plt.colorbar(label='Cluster')
-    plt.grid()
+    plt.colorbar(scatter, label='Cluster')
+    plt.grid(True)
 
-    # Save the plot to a BytesIO object and encode it as base64 for cluster plot
+    # Simpan scatter plot ke objek BytesIO dan encode ke base64
     img2 = io.BytesIO()
     plt.savefig(img2, format='png')
     img2.seek(0)
     cluster_plot_url = base64.b64encode(img2.getvalue()).decode()
+    plt.close()
 
-    # 5. Display Clustered Data (Optional)
-    print(df_scaled.head())
+    # 8. Menyusun hasil evaluasi dan plot untuk dikirim ke template
+    evaluation = {
+        'Silhouette Score': silhouette_avg,
+        'SSE': sse
+    }
 
-    return render_template('clustering.html', title="Cluster", header="Clustering",
-                           plot_url=plot_url, cluster_plot_url=cluster_plot_url)
+    return render_template('cluster.html',
+                           title="Cluster",
+                           header="Clustering",
+                           plot_url=plot_url,
+                           cluster_plot_url=cluster_plot_url,
+                           evaluation=evaluation,
+                           optimal_clusters=optimal_clusters)
 
 
 if __name__ == '__main__':
