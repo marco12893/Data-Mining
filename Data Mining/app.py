@@ -82,7 +82,6 @@ def cluster():
     plt.title('K-Means Clustering Results')
     plt.xlabel('PCA1')
     plt.ylabel('PCA2')
-    plt.colorbar(scatter, label='Cluster')
     plt.grid(True)
 
     # Simpan scatter plot ke objek BytesIO dan encode ke base64
@@ -99,13 +98,12 @@ def cluster():
     }
 
     return render_template('cluster.html',
-                           title="Cluster",
+                           title="Clustering",
                            header="Clustering",
                            plot_url=plot_url,
                            cluster_plot_url=cluster_plot_url,
                            evaluation=evaluation,
                            optimal_clusters=optimal_clusters)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
