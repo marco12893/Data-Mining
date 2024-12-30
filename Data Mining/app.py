@@ -105,5 +105,57 @@ def cluster():
                            evaluation=evaluation,
                            optimal_clusters=optimal_clusters)
 
+
+@app.route('/classification')
+def classification():
+    try:
+        
+        df_cleaned = df.fillna(df.median())  # Mengisi nilai yang hilang dengan median
+
+
+        # contoh, memprediksi pengguna dengan "Hight Data Usage"
+        # Membuat kolom target baru berdasarkan threshold data usage
+        if 'High Data Usage' not in df.columns:
+            df['High Data Usage'] = (df['Data Usage (MB/day)'] > 1000).astype(int)  # 1 jika > 1000 MB, 0 jika ≤ 1000 MB
+
+        # Pisahkan X (fitur) dan y (target)
+        X = df.drop('High Data Usage', axis=1)
+        y = df['High Data Usage']
+
+
+        # Membagi data menjadi train dan test
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Decision Tree Model
+        model = DecisionTreeClassifier(random_state=42)
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+
+        # Evaluation Metrics
+        report = classification_report(y_test, y_pred, output_dict=True)
+        cm = confusion_matrix(y_test, y_pred)
+
+        # Plot Confusion Matrix
+        plt.figure(figsize=(6, 4))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+        plt.xlabel('Predicted')
+        plt.ylabel('Actual')
+        img = io.BytesIO()
+        plt.savefig(img, format='png')
+        img.seek(0)
+        plot_url = base64.b64encode(img.getvalue()).decode()
+        plt.close()
+
+        # Mengirimkan hasil ke template HTML
+        return render_template('classification.html',
+                               title="Classification",
+                               header="Decision Tree Classification",
+                               report=report,
+                               plot_url=plot_url)
+
+    except Exception as e:
+        return f"An error occurred: {str(e)}", 500
+
+
 if __name__ == '__main__':
     app.run(debug=True)
