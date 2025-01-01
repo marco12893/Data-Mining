@@ -13,6 +13,10 @@ from sklearn.metrics import silhouette_score
 app = Flask(__name__)
 df = pd.read_csv('user_behavior_dataset.csv')
 
+@app.route('/layout')
+def layout():
+    return render_template('layout.html')
+
 @app.route('/')
 def home():
     print("Flask app running...")
