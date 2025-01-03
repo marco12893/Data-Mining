@@ -3,22 +3,25 @@ from flask import Flask, request, jsonify, render_template
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
-import io
-import base64
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.metrics import silhouette_score, classification_report, confusion_matrix
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 import seaborn as sns
 import io
 import base64
 
-
-
 app = Flask(__name__)
 df = pd.read_csv('user_behavior_dataset.csv')
+
+# Data Preprocessing for Association Route
+def preprocess_data(data):
+    data.columns = data.columns.str.lower().str.replace(' ', '_').str.replace(r'\(.*?\)', '', regex=True).str.strip('_')
+    data = data.drop(columns=['user_id', 'user_behavior_class'], errors='ignore')
+    return data
+
+data = preprocess_data(df)
 
 @app.route('/layout')
 def layout():
@@ -37,7 +40,6 @@ def about():
 @app.route('/prediksi')
 def prediksi():
     return render_template('base.html', title="About", header="About Flask")
-
 
 @app.route('/cluster')
 def cluster():
@@ -174,6 +176,51 @@ def classification():
 
     except Exception as e:
         return f"An error occurred: {str(e)}", 500
+
+
+@app.route('/association')
+def association():
+    # Generate Pie Chart
+    pie_img = io.BytesIO()
+    behavior_counts = data['user_behavior_class'].value_counts()
+    plt.figure(figsize=(6, 6))
+    plt.pie(behavior_counts, labels=behavior_counts.index, autopct='%1.1f%%', colors=sns.color_palette('viridis'))
+    plt.title('Distribution of User Behavior Classes')
+    plt.tight_layout()
+    plt.savefig(pie_img, format='png')
+    pie_img.seek(0)
+    pie_chart_url = base64.b64encode(pie_img.getvalue()).decode('utf8')
+
+    # Generate Scatter Plot
+    scatter_img = io.BytesIO()
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(x='app_usage_time', y='screen_on_time', hue='gender', data=data, palette='coolwarm')
+    plt.title('App Usage Time vs Screen On Time')
+    plt.tight_layout()
+    plt.savefig(scatter_img, format='png')
+    scatter_img.seek(0)
+    scatter_plot_url = base64.b64encode(scatter_img.getvalue()).decode('utf8')
+
+    # Generate Correlation Heatmap
+    heatmap_img = io.BytesIO()
+    plt.figure(figsize=(10, 8))
+    corr = data.corr()
+    sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f')
+    plt.title('Correlation Heatmap')
+    plt.tight_layout()
+    plt.savefig(heatmap_img, format='png')
+    heatmap_img.seek(0)
+    heatmap_url = base64.b64encode(heatmap_img.getvalue()).decode('utf8')
+
+    return render_template('association.html', 
+                           title="Association Analysis", 
+                           header="Analisis Hubungan Perangkat dan Pengguna",
+                           pie_chart_url=pie_chart_url, 
+                           scatter_plot_url=scatter_plot_url, 
+                           heatmap_url=heatmap_url)
+
+if __name__ == '__main__':
+    app.run(debug=True)    
 
 
 if __name__ == '__main__':
