@@ -1,31 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }}</title>
-</head>
-<body>
-    <h1>{{ header }}</h1>
-    <h2>Confusion Matrix</h2>
-    <img src="data:image/png;base64,{{ plot_url }}" alt="Confusion Matrix">
+{% extends "layout.html" %}
 
-    <h2>Classification Report</h2>
-    <table border="1">
-        <tr>
-            <th>Class</th>
-            <th>Precision</th>
-            <th>Recall</th>
-            <th>F1-Score</th>
-        </tr>
-        {% for class, metrics in report.items() if class != 'accuracy' %}
-        <tr>
-            <td>{{ class }}</td>
-            <td>{{ metrics['precision'] }}</td>
-            <td>{{ metrics['recall'] }}</td>
-            <td>{{ metrics['f1-score'] }}</td>
-        </tr>
-        {% endfor %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <!-- Classification Report -->
+    <h2>Evaluation Metrics</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Class</th>
+                <th>Precision</th>
+                <th>Recall</th>
+                <th>F1-Score</th>
+                <th>Support</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for label, metrics in report.items() if label != 'accuracy' %}
+                <tr>
+                    <td>{{ label }}</td>
+                    <td>{{ metrics['precision'] | round(2) }}</td>
+                    <td>{{ metrics['recall'] | round(2) }}</td>
+                    <td>{{ metrics['f1-score'] | round(2) }}</td>
+                    <td>{{ metrics['support'] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
     </table>
-</body>
-</html>
+    
+    <!-- Confusion Matrix -->
+    <div class="heatmap">
+        <h2>Confusion Matrix</h2>
+        <img src="data:image/png;base64,{{ plot_url }}" alt="Confusion Matrix">
+    </div>
+{% endblock %}
