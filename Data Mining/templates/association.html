@@ -2,86 +2,31 @@
 
 {% block content %}
 <div class="container my-4">
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm text-white bg-primary">
-                <div class="card-header text-center">
-                    <strong>Silhouette Score</strong>
-                </div>
-                <div class="card-body text-center">
-                    <h3 class="card-title">{{ evaluation["Silhouette Score"] | round(3) }}</h3>
-                </div>
-            </div>
-        </div>
-    
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm text-white bg-success">
-                <div class="card-header text-center">
-                    <strong>Optimal Clusters</strong>
-                </div>
-                <div class="card-body text-center">
-                    <h3 class="card-title">{{ optimal_clusters }}</h3>
-                </div>
-            </div>
-        </div>
-    </div>
+    <h2 class="text-center">Association Analysis</h2>
 
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card shadow-sm text-white bg-info">
-                <div class="card-header text-center">
-                    <strong>SSE Values 1-5</strong>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        {% for s in evaluation["SSE"][:5] %}
-                            <div class="p-2 flex-fill text-center">
-                                <div class="alert alert-secondary mb-0">
-                                    <strong>Cluster {{ loop.index }}:</strong> {{ s | round(2) }}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card shadow-sm text-white bg-info">
-                <div class="card-header text-center">
-                    <strong>SSE Values 6-10</strong>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        {% for s in evaluation["SSE"][5:10] %}
-                            <div class="p-2 flex-fill text-center">
-                                <div class="alert alert-secondary mb-0">
-                                    <strong>Cluster {{ loop.index + 5 }}:</strong> {{ s | round(2) }}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
+    <div class="mb-5">
+        <h5 class="mb-3">Pie Chart: User Behavior Classes</h5>
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ pie_chart_url }}" alt="Pie Chart" class="img-fluid rounded">
             </div>
         </div>
     </div>
 
     <div class="mb-5">
-        <h5 class="mb-3">Elbow Method Plot</h5>
+        <h5 class="mb-3">Scatter Plot: App Usage Time vs Screen On Time</h5>
         <div class="card shadow-sm">
-            <div class="card-body">
-                <img src="data:image/png;base64,{{ plot_url }}" alt="Elbow Method Plot" class="img-fluid rounded">
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ scatter_plot_url }}" alt="Scatter Plot" class="img-fluid rounded">
             </div>
         </div>
     </div>
 
-    <div>
-        <h5 class="mb-3">Clustering Scatter Plot</h5>
+    <div class="mb-5">
+        <h5 class="mb-3">Correlation Heatmap</h5>
         <div class="card shadow-sm">
-            <div class="card-body">
-                <img src="data:image/png;base64,{{ cluster_plot_url }}" alt="Clustering Scatter Plot" class="img-fluid rounded">
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ heatmap_url }}" alt="Correlation Heatmap" class="img-fluid rounded">
             </div>
         </div>
     </div>
