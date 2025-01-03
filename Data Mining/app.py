@@ -34,6 +34,11 @@ def about():
     print("Flask app running...")
     return render_template('base.html', title="About", header="About Flask")
 
+@app.route('/prediksi')
+def prediksi():
+    return render_template('base.html', title="About", header="About Flask")
+
+
 @app.route('/cluster')
 def cluster():
     # Nentuin kolom yang perlu dinormalisasi min max
@@ -119,140 +124,144 @@ def cluster():
 @app.route('/classification')
 def classification():
     try:
-        
-        df_cleaned = df.fillna(df.median())  # Mengisi nilai yang hilang dengan median
+        # Preprocessing dataset
+        df_cleaned = df  # Isi nilai kosong dengan median
 
+        # Membuat kolom target 'High Data Usage'
+        if 'High Data Usage' not in df_cleaned.columns:
+            df_cleaned['High Data Usage'] = (df_cleaned['Data Usage (MB/day)'] > 1000).astype(int)
 
-        # contoh, memprediksi pengguna dengan "Hight Data Usage"
-        # Membuat kolom target baru berdasarkan threshold data usage
-        if 'High Data Usage' not in df.columns:
-            df['High Data Usage'] = (df['Data Usage (MB/day)'] > 1000).astype(int)  # 1 jika > 1000 MB, 0 jika ≤ 1000 MB
+        # Pisahkan fitur (X) dan target (y)
+        X = df_cleaned.drop(['High Data Usage'], axis=1)
+        y = df_cleaned['High Data Usage']
 
-        # Pisahkan X (fitur) dan y (target)
-        X = df.drop('High Data Usage', axis=1)
-        y = df['High Data Usage']
-
-
-        # Membagi data menjadi train dan test
+        # Pisahkan data menjadi train-test split
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        # Decision Tree Model
+        # Melatih Decision Tree Classifier
         model = DecisionTreeClassifier(random_state=42)
         model.fit(X_train, y_train)
+
+        # Prediksi data uji
         y_pred = model.predict(X_test)
 
-        # Evaluation Metrics
+        # Menghitung metrik evaluasi
         report = classification_report(y_test, y_pred, output_dict=True)
         cm = confusion_matrix(y_test, y_pred)
 
         # Plot Confusion Matrix
         plt.figure(figsize=(6, 4))
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False)
+        plt.title('Confusion Matrix')
         plt.xlabel('Predicted')
         plt.ylabel('Actual')
+
+        # Simpan plot sebagai gambar
         img = io.BytesIO()
         plt.savefig(img, format='png')
         img.seek(0)
         plot_url = base64.b64encode(img.getvalue()).decode()
         plt.close()
 
-        # Mengirimkan hasil ke template HTML
-        return render_template('classification.html',
-                               title="Classification",
-                               header="Decision Tree Classification",
-                               report=report,
-                               plot_url=plot_url)
+        # Kirimkan hasil evaluasi ke template
+        return render_template(
+            'classification.html',
+            title="Classification",
+            header="Decision Tree Classification",
+            report=report,
+            plot_url=plot_url
+        )
 
     except Exception as e:
         return f"An error occurred: {str(e)}", 500
 
 
-app = Flask(__name__)
-
-@app.route('/association')
-def association():
-    # Clean dataset
-    data.columns = data.columns.str.lower().str.replace(' ', '_').str.replace(r'\(.*?\)', '', regex=True).str.strip('_')
-    data = data.drop(columns=['user_id', 'user_behavior_class'], errors='ignore')
-
-    # Define columns to normalize
-    columns_to_transform = ['app_usage_time', 'screen_on_time',
-                            'battery_drain', 'data_usage',
-                            'number_of_apps_installed', 'age']
-
-    # Apply Min-Max Normalization
-    scaler = MinMaxScaler(feature_range=(1, 10))
-    df_normalized = pd.DataFrame(
-        scaler.fit_transform(data[columns_to_transform]),
-        columns=columns_to_transform
-    )
-
-    # Elbow Method for Optimal Clusters
-    sse = []
-    max_clusters = 10
-    for n_clusters in range(1, max_clusters + 1):
-        kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-        kmeans.fit(df_normalized)
-        sse.append(kmeans.inertia_)
-
-    # Plot Elbow Method
-    plt.figure(figsize=(8, 5))
-    plt.plot(range(1, max_clusters + 1), sse, marker='o', linestyle='--')
-    plt.xlabel('Number of Clusters')
-    plt.ylabel('Sum of Squared Errors (SSE)')
-    plt.title('Elbow Method for Optimal Number of Clusters')
-    plt.grid(True)
-
-    # Save plot as image
-    img = io.BytesIO()
-    plt.savefig(img, format='png')
-    img.seek(0)
-    plot_url = base64.b64encode(img.getvalue()).decode()
-    plt.close()
-
-    # Perform K-Means Clustering
-    optimal_clusters = 5
-    kmeans = KMeans(n_clusters=optimal_clusters, random_state=42)
-    df_normalized['Cluster'] = kmeans.fit_predict(df_normalized)
-
-    # Calculate silhouette score
-    silhouette_avg = silhouette_score(df_normalized, df_normalized['Cluster'])
-
-    # PCA for Visualization
-    pca = PCA(n_components=2)
-    X_pca = pca.fit_transform(df_normalized)
-    df_normalized['PCA1'], df_normalized['PCA2'] = X_pca[:, 0], X_pca[:, 1]
-
-    # Scatter Plot for Clustering
-    plt.figure(figsize=(8, 5))
-    scatter = plt.scatter(df_normalized['PCA1'], df_normalized['PCA2'],
-                          c=df_normalized['Cluster'], cmap='viridis', s=50)
-    plt.title('K-Means Clustering Results')
-    plt.xlabel('PCA1')
-    plt.ylabel('PCA2')
-    plt.grid(True)
-
-    # Save scatter plot as image
-    img2 = io.BytesIO()
-    plt.savefig(img2, format='png')
-    img2.seek(0)
-    cluster_plot_url = base64.b64encode(img2.getvalue()).decode()
-    plt.close()
-
-    # Evaluation results
-    evaluation = {
-        'Silhouette Score': silhouette_avg,
-        'SSE': sse
-    }
-
-    return render_template('cluster.html',
-                           title="Clustering",
-                           header="Clustering",
-                           plot_url=plot_url,
-                           cluster_plot_url=cluster_plot_url,
-                           evaluation=evaluation,
-                           optimal_clusters=optimal_clusters)
-
+# app = Flask(__name__)
+#
+# @app.route('/association')
+# def association():
+#     # Clean dataset
+#     data.columns = data.columns.str.lower().str.replace(' ', '_').str.replace(r'\(.*?\)', '', regex=True).str.strip('_')
+#     data = data.drop(columns=['user_id', 'user_behavior_class'], errors='ignore')
+#
+#     # Define columns to normalize
+#     columns_to_transform = ['app_usage_time', 'screen_on_time',
+#                             'battery_drain', 'data_usage',
+#                             'number_of_apps_installed', 'age']
+#
+#     # Apply Min-Max Normalization
+#     scaler = MinMaxScaler(feature_range=(1, 10))
+#     df_normalized = pd.DataFrame(
+#         scaler.fit_transform(data[columns_to_transform]),
+#         columns=columns_to_transform
+#     )
+#
+#     # Elbow Method for Optimal Clusters
+#     sse = []
+#     max_clusters = 10
+#     for n_clusters in range(1, max_clusters + 1):
+#         kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+#         kmeans.fit(df_normalized)
+#         sse.append(kmeans.inertia_)
+#
+#     # Plot Elbow Method
+#     plt.figure(figsize=(8, 5))
+#     plt.plot(range(1, max_clusters + 1), sse, marker='o', linestyle='--')
+#     plt.xlabel('Number of Clusters')
+#     plt.ylabel('Sum of Squared Errors (SSE)')
+#     plt.title('Elbow Method for Optimal Number of Clusters')
+#     plt.grid(True)
+#
+#     # Save plot as image
+#     img = io.BytesIO()
+#     plt.savefig(img, format='png')
+#     img.seek(0)
+#     plot_url = base64.b64encode(img.getvalue()).decode()
+#     plt.close()
+#
+#     # Perform K-Means Clustering
+#     optimal_clusters = 5
+#     kmeans = KMeans(n_clusters=optimal_clusters, random_state=42)
+#     df_normalized['Cluster'] = kmeans.fit_predict(df_normalized)
+#
+#     # Calculate silhouette score
+#     silhouette_avg = silhouette_score(df_normalized, df_normalized['Cluster'])
+#
+#     # PCA for Visualization
+#     pca = PCA(n_components=2)
+#     X_pca = pca.fit_transform(df_normalized)
+#     df_normalized['PCA1'], df_normalized['PCA2'] = X_pca[:, 0], X_pca[:, 1]
+#
+#     # Scatter Plot for Clustering
+#     plt.figure(figsize=(8, 5))
+#     scatter = plt.scatter(df_normalized['PCA1'], df_normalized['PCA2'],
+#                           c=df_normalized['Cluster'], cmap='viridis', s=50)
+#     plt.title('K-Means Clustering Results')
+#     plt.xlabel('PCA1')
+#     plt.ylabel('PCA2')
+#     plt.grid(True)
+#
+#     # Save scatter plot as image
+#     img2 = io.BytesIO()
+#     plt.savefig(img2, format='png')
+#     img2.seek(0)
+#     cluster_plot_url = base64.b64encode(img2.getvalue()).decode()
+#     plt.close()
+#
+#     # Evaluation results
+#     evaluation = {
+#         'Silhouette Score': silhouette_avg,
+#         'SSE': sse
+#     }
+#
+#     return render_template('cluster.html',
+#                            title="Clustering",
+#                            header="Clustering",
+#                            plot_url=plot_url,
+#                            cluster_plot_url=cluster_plot_url,
+#                            evaluation=evaluation,
+#                            optimal_clusters=optimal_clusters)
+#
 
 if __name__ == '__main__':
     app.run(debug=True)
