@@ -124,59 +124,7 @@ def cluster():
 
 
 @app.route('/classification')
-def classification():
-    try:
-        # Preprocessing dataset
-        df_cleaned = df  # Isi nilai kosong dengan median
-
-        # Membuat kolom target 'High Data Usage'
-        if 'High Data Usage' not in df_cleaned.columns:
-            df_cleaned['High Data Usage'] = (df_cleaned['Data Usage (MB/day)'] > 1000).astype(int)
-
-        # Pisahkan fitur (X) dan target (y)
-        X = df_cleaned.drop(['High Data Usage'], axis=1)
-        y = df_cleaned['High Data Usage']
-
-        # Pisahkan data menjadi train-test split
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-        # Melatih Decision Tree Classifier
-        model = DecisionTreeClassifier(random_state=42)
-        model.fit(X_train, y_train)
-
-        # Prediksi data uji
-        y_pred = model.predict(X_test)
-
-        # Menghitung metrik evaluasi
-        report = classification_report(y_test, y_pred, output_dict=True)
-        cm = confusion_matrix(y_test, y_pred)
-
-        # Plot Confusion Matrix
-        plt.figure(figsize=(6, 4))
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False)
-        plt.title('Confusion Matrix')
-        plt.xlabel('Predicted')
-        plt.ylabel('Actual')
-
-        # Simpan plot sebagai gambar
-        img = io.BytesIO()
-        plt.savefig(img, format='png')
-        img.seek(0)
-        plot_url = base64.b64encode(img.getvalue()).decode()
-        plt.close()
-
-        # Kirimkan hasil evaluasi ke template
-        return render_template(
-            'classification.html',
-            title="Classification",
-            header="Decision Tree Classification",
-            report=report,
-            plot_url=plot_url
-        )
-
-    except Exception as e:
-        return f"An error occurred: {str(e)}", 500
-
+#bentar ya ges menyusul, msh revisi
 
 @app.route('/association')
 def association():
