@@ -15,7 +15,7 @@ import base64
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 import joblib
-
+from sklearn.ensemble import IsolationForest
 
 app = Flask(__name__)
 df = pd.read_csv('user_behavior_dataset.csv')
@@ -239,6 +239,56 @@ def prediksi():
             return f"Error occurred: {str(e)}", 400
     return render_template('prediksi.html', title="Prediksi Konsumsi Baterai", header="Prediksi Konsumsi Baterai")
 
+@app.route("/deteksi", methods=["GET", "POST"])
+def deteksi():
+    # Pilih kolom numerik yang relevan
+    features = [
+        "App Usage Time (min/day)",
+        "Screen On Time (hours/day)",
+        "Battery Drain (mAh/day)",
+        "Number of Apps Installed",
+        "Data Usage (MB/day)",
+    ]
+    if request.method == "POST":
+        # Normalisasi data
+        X = df[features]
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(X)
+
+        # Model Isolation Forest
+        iso_forest = IsolationForest(contamination=0.05, random_state=42)
+        anomaly_labels = iso_forest.fit_predict(X_scaled)
+
+        # Tambahkan label ke dataset
+        df["anomaly"] = anomaly_labels
+
+        # Analisis penyebab anomali
+        df["log"] = ""
+        for idx, row in df.iterrows():
+            if row["anomaly"] == -1:  # Hanya untuk anomali
+                deviations = (row[features] - X.mean()) / X.std()  # Deviasi
+                high_deviation = deviations[abs(deviations) > 2]  # Threshold deviasi
+                reasons = ", ".join(
+                    f"{feature} ({row[feature]:.2f})" for feature in high_deviation.index
+                )
+                df.at[idx, "log"] = f"Anomali karena: {reasons}"
+
+        # Filter data anomali
+        anomalies = df[df["anomaly"] == -1]
+
+        return render_template(
+            "deteksi.html",
+            title="Deteksi Anomali",
+            header="Hasil Deteksi Anomali",
+            anomalies=anomalies.to_dict(orient="records"),
+            columns=anomalies.columns,
+        )
+
+    return render_template(
+        "deteksi.html",
+        title="Deteksi Anomali",
+        header="Deteksi Perilaku Pengguna Tidak Normal",
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">{{ header }}</h2>
+    <p class="text-center">
+        Deteksi pengguna dengan pola penggunaan perangkat yang tidak normal menggunakan Isolation Forest.
+    </p>
+
+    <form method="post" action="/deteksi">
+        <button type="submit" class="btn btn-danger w-100">Deteksi Anomali</button>
+    </form>
+
+    {% if anomalies %}
+    <h3 class="mt-4">Hasil Deteksi Anomali</h3>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                {% for col in columns %}
+                <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in anomalies %}
+            <tr>
+                {% for col in columns %}
+                <td>{{ row[col] }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+{% endblock %}
