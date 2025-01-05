@@ -4,8 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b71fd62b-bee9-4853-8fda-f9f2872da04b" name="Changes" comment="nambahi import">
+    <list default="true" id="b71fd62b-bee9-4853-8fda-f9f2872da04b" name="Changes" comment="fix bug">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Data Mining/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/Data Mining/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Data Mining/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/Data Mining/templates/layout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Data Mining/templates/prediksi.html" beforeDir="false" afterPath="$PROJECT_DIR$/Data Mining/templates/prediksi.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -132,7 +135,23 @@
       <option name="project" value="LOCAL" />
       <updated>1735821667525</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="fix index">
+      <option name="closed" value="true" />
+      <created>1735908901085</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1735908901085</updated>
+    </task>
+    <task id="LOCAL-00009" summary="fix bug">
+      <option name="closed" value="true" />
+      <created>1735912351196</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1735912351196</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -152,6 +171,8 @@
     <MESSAGE value="minor fixes" />
     <MESSAGE value="UI ganti" />
     <MESSAGE value="nambahi import" />
-    <option name="LAST_COMMIT_MESSAGE" value="nambahi import" />
+    <MESSAGE value="fix index" />
+    <MESSAGE value="fix bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix bug" />
   </component>
 </project>
