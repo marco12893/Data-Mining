@@ -155,49 +155,258 @@ def cluster():
                            optimal_clusters=optimal_clusters)
 
 
-# @app.route('/classification')
-#bentar ya ges menyusul, msh revisi
+@app.route('/association')
+def association():
+    # Load data
+    data = pd.read_csv("user_behavior_dataset.csv")
 
-# @app.route('/association')
-# def association():
-#     # Generate Pie Chart
-#     pie_img = io.BytesIO()
-#     behavior_counts = data['user_behavior_class'].value_counts()
-#     plt.figure(figsize=(6, 6))
-#     plt.pie(behavior_counts, labels=behavior_counts.index, autopct='%1.1f%%', colors=sns.color_palette('viridis'))
-#     plt.title('Distribution of User Behavior Classes')
-#     plt.tight_layout()
-#     plt.savefig(pie_img, format='png')
-#     pie_img.seek(0)
-#     pie_chart_url = base64.b64encode(pie_img.getvalue()).decode('utf8')
-#
-#     # Generate Scatter Plot
-#     scatter_img = io.BytesIO()
-#     plt.figure(figsize=(10, 6))
-#     sns.scatterplot(x='app_usage_time', y='screen_on_time', hue='gender', data=data, palette='coolwarm')
-#     plt.title('App Usage Time vs Screen On Time')
-#     plt.tight_layout()
-#     plt.savefig(scatter_img, format='png')
-#     scatter_img.seek(0)
-#     scatter_plot_url = base64.b64encode(scatter_img.getvalue()).decode('utf8')
-#
-#     # Generate Correlation Heatmap
-#     heatmap_img = io.BytesIO()
-#     plt.figure(figsize=(10, 8))
-#     corr = data.corr()
-#     sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f')
-#     plt.title('Correlation Heatmap')
-#     plt.tight_layout()
-#     plt.savefig(heatmap_img, format='png')
-#     heatmap_img.seek(0)
-#     heatmap_url = base64.b64encode(heatmap_img.getvalue()).decode('utf8')
-#
-#     return render_template('association.html',
-#                            title="Association Analysis",
-#                            header="Analisis Hubungan Perangkat dan Pengguna",
-#                            pie_chart_url=pie_chart_url,
-#                            scatter_plot_url=scatter_plot_url,
-#                            heatmap_url=heatmap_url)
+    # Preprocessing
+    data = data[['Device Model', 'Operating System', 'App Usage Time (min/day)', 'Number of Apps Installed', 'Screen On Time (hours/day)', 'Battery Drain (mAh/day)', 'Data Usage (MB/day)', 'Age', 'Gender']]
+    grouped_data = data.groupby(['Device Model', 'Operating System']).agg({
+        'App Usage Time (min/day)': 'mean',
+        'Number of Apps Installed': 'mean'
+    }).reset_index()
+
+    grouped_data['App Usage Category'] = pd.cut(grouped_data['App Usage Time (min/day)'],
+                                                bins=[0, 1, 2, 3, 4, 5, 24],
+                                                labels=['<1h', '1-2h', '2-3h', '3-4h', '4-5h', '>5h'])
+
+    association_data = grouped_data[['Device Model', 'Operating System', 'App Usage Category', 'Number of Apps Installed']]
+
+    transaction_list = []
+    for _, row in association_data.iterrows():
+        transaction = [
+            row['Device Model'],
+            row['Operating System'],
+            row['App Usage Category'],
+            f"Apps_{row['Number of Apps Installed']}"
+        ]
+        transaction_list.append(transaction)
+
+    transaction_df = pd.DataFrame(transaction_list)
+    onehot = pd.get_dummies(transaction_df.stack()).groupby(level=0).sum()
+
+    # FP-Growth
+    frequent_itemsets_fp = fpgrowth(onehot, min_support=0.05, use_colnames=True)
+    rules_fp = association_rules(frequent_itemsets_fp, metric="confidence", min_threshold=0.5, num_itemsets=len(frequent_itemsets_fp))
+
+    # Apriori
+    frequent_itemsets_apriori = apriori(onehot, min_support=0.05, use_colnames=True)
+    rules_apriori = association_rules(frequent_itemsets_apriori, metric="confidence", min_threshold=0.5, num_itemsets=len(frequent_itemsets_apriori))
+
+    # Visualization for FP-Growth
+    heatmap_img_fp = io.BytesIO()
+    heatmap_data_fp = rules_fp.pivot_table(index='antecedents', columns='consequents', values='confidence', fill_value=0)
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(heatmap_data_fp, annot=True, cmap='coolwarm', fmt=".2f")
+    plt.title('Heatmap of FP-Growth Rules')
+    plt.savefig(heatmap_img_fp, format='png')
+    heatmap_img_fp.seek(0)
+    heatmap_url_fp = base64.b64encode(heatmap_img_fp.getvalue()).decode('utf8')
+
+    # Visualization for Apriori
+    heatmap_img_apriori = io.BytesIO()
+    heatmap_data_apriori = rules_apriori.pivot_table(index='antecedents', columns='consequents', values='confidence', fill_value=0)
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(heatmap_data_apriori, annot=True, cmap='coolwarm', fmt=".2f")
+    plt.title('Heatmap of Apriori Rules')
+    plt.savefig(heatmap_img_apriori, format='png')
+    heatmap_img_apriori.seek(0)
+    heatmap_url_apriori = base64.b64encode(heatmap_img_apriori.getvalue()).decode('utf8')
+
+    # Graph Visualization FP
+    graph_img_fp = io.BytesIO()
+    G_fp = nx.DiGraph()
+    for _, row in rules_fp.iterrows():
+        for antecedent in row['antecedents']:
+            G_fp.add_edge(antecedent, row['consequents'], weight=row['confidence'])
+    pos_fp = nx.spring_layout(G_fp)
+    plt.figure(figsize=(12, 12))
+    nx.draw(G_fp, pos_fp, with_labels=True, node_size=2000, node_color='lightblue', font_size=10, font_weight='bold', arrows=True)
+    edge_labels_fp = nx.get_edge_attributes(G_fp, 'weight')
+    nx.draw_networkx_edge_labels(G_fp, pos_fp, edge_labels=edge_labels_fp)
+    plt.savefig(graph_img_fp, format='png')
+    graph_img_fp.seek(0)
+    graph_url_fp = base64.b64encode(graph_img_fp.getvalue()).decode('utf8')
+
+    # Graph Visualization Apriori 
+    graph_img_apriori = io.BytesIO()
+    G_apriori = nx.DiGraph()
+    for _, row in rules_apriori.iterrows():
+        for antecedent in row['antecedents']:
+            G_apriori.add_edge(antecedent, row['consequents'], weight=row['confidence'])
+    pos_apriori = nx.spring_layout(G_apriori)
+    plt.figure(figsize=(12, 12))
+    nx.draw(G_apriori, pos_apriori, with_labels=True, node_size=2000, node_color='lightblue', font_size=10, font_weight='bold', arrows=True)
+    edge_labels_fp = nx.get_edge_attributes(G_apriori, 'weight')
+    nx.draw_networkx_edge_labels(G_apriori, pos_apriori, edge_labels=edge_labels_fp)
+    plt.savefig(graph_img_apriori, format='png')
+    graph_img_apriori.seek(0)
+    graph_url_apriori = base64.b64encode(graph_img_apriori.getvalue()).decode('utf8')
+
+
+    # Generate Device Model
+    device_model_counts = data['Device Model'].value_counts().head(10)
+    operating_system_counts = data['Operating System'].value_counts().head(10)
+    device_img = io.BytesIO()
+    plt.figure(figsize=(12, 6))
+    sns.barplot(x=device_model_counts.values, y=device_model_counts.index, palette='viridis')
+    plt.title('10 Device Model Teratas')
+    plt.xlabel('Jumlah Penggunaan')
+    plt.ylabel('Device Model')
+    plt.savefig(device_img, format='png')
+    device_img.seek(0)
+    device_url = base64.b64encode(device_img.getvalue()).decode('utf8')
+
+    # Generate OS
+    os_img = io.BytesIO()
+    plt.figure(figsize=(12, 6))
+    sns.barplot(x=operating_system_counts.values, y=operating_system_counts.index, palette='viridis')
+    plt.title('10 Operating System Teratas')
+    plt.xlabel('Jumlah Penggunaan')
+    plt.ylabel('Operating System')
+    plt.savefig(os_img, format='png')
+    os_img.seek(0)
+    os_url = base64.b64encode(os_img.getvalue()).decode('utf8')
+
+    # Generate dvm 0
+    dvm = data.groupby('Device Model').agg({
+    'Number of Apps Installed': 'mean',
+    'App Usage Time (min/day)': 'mean'
+    }).reset_index()
+    print(dvm)
+    plt.figure(figsize=(12, 6))
+    dvm_img = io.BytesIO()
+    sns.scatterplot(data=dvm, x='Number of Apps Installed', y='App Usage Time (min/day)', hue='Device Model', palette='rainbow', s=100)
+    plt.title('Hubungan antara Number of Apps Installed dan App Usage Time')
+    plt.xlabel('Rata-rata Jumlah Aplikasi yang Diinstal')
+    plt.ylabel('Rata-rata Waktu Penggunaan Aplikasi (dalam menit)')
+    plt.legend(title="Device Model", fontsize=10)
+    plt.savefig(dvm_img, format='png')
+    dvm_img.seek(0)
+    dvm_url = base64.b64encode(dvm_img.getvalue()).decode('utf8')
+
+    # Generate dvm1
+    dvm1 = data.groupby('Device Model').agg({
+        'App Usage Time (min/day)': 'mean',
+        'Screen On Time (hours/day)': 'mean',
+        'Battery Drain (mAh/day)': 'mean'
+     }).reset_index()
+    print(dvm1)
+    plt.figure(figsize=(12, 6))
+    dvm1_img = io.BytesIO()
+    sns.scatterplot(data=dvm1, x='App Usage Time (min/day)', y='Screen On Time (hours/day)', hue='Device Model', palette='rainbow', s=100)
+    plt.title('Hubungan antara App Usage Time dan Screen On Time')
+    plt.xlabel('Rata-rata Waktu Penggunaan Aplikasi (dalam menit)')
+    plt.ylabel('Rata-rata Waktu Layar Menyala (dalam menit)')
+    plt.legend(title="Device Model", fontsize=10)
+    plt.savefig(dvm1_img, format='png')
+    dvm1_img.seek(0)
+    dvm1_url = base64.b64encode(dvm1_img.getvalue()).decode('utf8')
+
+
+    # Generate dvm2
+    correlation_usage_screen = dvm1['App Usage Time (min/day)'].corr(dvm1['Screen On Time (hours/day)'])
+    print(f'Korelasi antara App Usage Time dan Screen On Time: {correlation_usage_screen}')
+
+    plt.figure(figsize=(12, 6))
+    sns.scatterplot(data=dvm1, x='Screen On Time (hours/day)', y='Battery Drain (mAh/day)', hue='Device Model', palette='rainbow', s=100)
+    plt.title('Hubungan antara Screen On Time dan Battery Drain')
+    plt.xlabel('Rata-rata Waktu Layar Menyala (dalam menit)')
+    plt.ylabel('Rata-rata Pengurasan Baterai (dalam %)')
+    plt.legend(title="Device Model", fontsize=10)
+        
+    dvm2_img = io.BytesIO()
+    plt.savefig(dvm2_img, format='png')
+    dvm2_img.seek(0)
+    dvm2_url = base64.b64encode(dvm2_img.getvalue()).decode('utf8')
+
+    correlation_screen_battery = dvm1['Screen On Time (hours/day)'].corr(dvm1['Battery Drain (mAh/day)'])
+    print(f'Korelasi antara Screen On Time dan Battery Drain: {correlation_screen_battery}')
+
+
+    # Generate dvm 3
+    device_model_analysis = data.groupby('Device Model').agg({
+        'Screen On Time (hours/day)': 'mean',
+        'Data Usage (MB/day)': 'mean'
+    }).reset_index()
+
+    print(device_model_analysis)
+
+    plt.figure(figsize=(12, 6))
+    sns.scatterplot(data=device_model_analysis, x='Screen On Time (hours/day)', y='Data Usage (MB/day)', hue='Device Model', palette='rainbow', s=100)
+    plt.title('Hubungan antara Screen On Time dan Data Usage')
+    plt.xlabel('Rata-rata Waktu Layar Menyala (dalam menit)')
+    plt.ylabel('Rata-rata Penggunaan Data (dalam MB)')
+    plt.legend(title="Device Model", fontsize=10)
+
+    dvm3_img = io.BytesIO()
+    plt.savefig(dvm3_img, format='png')
+    dvm3_img.seek(0)
+    dvm3_url = base64.b64encode(dvm3_img.getvalue()).decode('utf8')
+
+
+    # Generate Gender
+    gender_img = io.BytesIO()
+    plt.figure(figsize=(25, 10))
+    gender_analysis = data.groupby('Gender')['Screen On Time (hours/day)'].mean().reset_index()
+    print(gender_analysis)
+    plt.figure(figsize=(8, 5))
+    sns.barplot(data=gender_analysis, x='Gender', y='Screen On Time (hours/day)', palette='rainbow')
+    plt.title('Rata-rata Screen On Time berdasarkan Gender')
+    plt.xlabel('Gender')
+    plt.ylabel('Rata-rata Waktu Layar Menyala (dalam menit)')
+    plt.savefig(gender_img, format='png')
+    gender_img.seek(0)
+    gender_url = base64.b64encode(gender_img.getvalue()).decode('utf8')
+
+
+  # Generate Age
+    age_img = io.BytesIO()  
+    plt.figure(figsize=(12, 6))
+    sns.boxplot(data=data, x='Age', y='Screen On Time (hours/day)', palette='rainbow')
+    plt.title('Distribusi Screen On Time berdasarkan Usia')
+    plt.xlabel('Usia')
+    plt.ylabel('Waktu Layar Menyala (dalam menit)')
+    plt.xticks(rotation=45)
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.savefig(age_img, format='png')
+    age_img.seek(0)
+    age_url = base64.b64encode(age_img.getvalue()).decode('utf8')
+
+
+    # Generate Scatter Plot
+    scatter_img = io.BytesIO()
+    plt.figure(figsize=(12, 6))
+    sns.scatterplot(data=grouped_data, x='Number of Apps Installed', y='App Usage Time (min/day)', hue='Device Model', palette='rainbow', s=100)
+    plt.title('Number of Apps Installed vs App Usage Time')
+    plt.xlabel('Number of Apps Installed')
+    plt.ylabel('App Usage Time (min/day)')
+    plt.legend(title="Device Model", fontsize=10)
+    plt.savefig(scatter_img, format='png')
+    scatter_img.seek(0)
+    scatter_url = base64.b64encode(scatter_img.getvalue()).decode('utf8')
+
+
+
+
+    return render_template('association.html',
+                           title="Association Analysis",
+                           header="FP-Growth and Apriori Rules",
+                           heatmap_url_fp=heatmap_url_fp,
+                           heatmap_url_apriori=heatmap_url_apriori,
+                           graph_url_fp=graph_url_fp,
+                           graph_url_apriori = graph_url_apriori,
+                           scatter_url=scatter_url,
+                           device_url = device_url,
+                           os_url=os_url,
+                           dvm_url = dvm_url,
+                           dvm1_url = dvm1_url,
+                           dvm2_url = dvm2_url,
+                           dvm3_url = dvm3_url,
+                           gender_url = gender_url,
+                           age_url = age_url)
+
 
 @app.route('/prediksi', methods=['GET', 'POST'])
 def prediksi():
