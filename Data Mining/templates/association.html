@@ -1,34 +1,108 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="container my-4">
-    <h2 class="text-center">Association Analysis</h2>
+    <div class="container">
+        <div class="row">
+            <h1>Analisis Hubungan Perangkat dan Pengguna</h1>
+        </div>
 
-    <div class="mb-5">
-        <h5 class="mb-3">Pie Chart: User Behavior Classes</h5>
-        <div class="card shadow-sm">
-            <div class="card-body text-center">
-                <img src="data:image/png;base64,{{ pie_chart_url }}" alt="Pie Chart" class="img-fluid rounded">
+        <div class="row">
+            <div>
+                <img src="data:image/png;base64,{{ device_url }}" class="img-fluid" alt="Device Model">
+            </div>
+        </div>
+
+        <div class="row">
+            <div>
+                <img src="data:image/png;base64,{{ os_url }}" class="img-fluid" alt="OS">
+            </div>
+        </div>
+
+        <div class="row">
+            <div>
+                <img src="data:image/png;base64,{{ dvm_url }}" class="img-fluid" alt="dvm">
+            </div>
+        </div>
+
+        <div class="row">
+            <div>
+                <img src="data:image/png;base64,{{ dvm1_url }}" class="img-fluid" alt="dvm1">
+            </div>
+        </div>
+
+        <div class="row">
+            <div>
+                <img src="data:image/png;base64,{{ dvm2_url }}" class="img-fluid" alt="dvm2">
+            </div>
+        </div>
+
+        <div class="row">
+            <div>
+                <img src="data:image/png;base64,{{ dvm3_url }}" class="img-fluid" alt="dvm3">
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div>
+                <img src="data:image/png;base64,{{ gender_url }}" class="img-fluid" alt="Gender Url">
+            </div>
+        </div>
+
+        <div class="row">
+            <div>
+                <img src="data:image/png;base64,{{ age_url }}" class="img-fluid" alt="Age Url">
+            </div>
+        </div>
+
+        <div class="row">
+            <div>
+                <img src="data:image/png;base64,{{ scatter_url }}" class="img-fluid" alt="Scatter Plot">
             </div>
         </div>
     </div>
 
-    <div class="mb-5">
-        <h5 class="mb-3">Scatter Plot: App Usage Time vs Screen On Time</h5>
-        <div class="card shadow-sm">
-            <div class="card-body text-center">
-                <img src="data:image/png;base64,{{ scatter_plot_url }}" alt="Scatter Plot" class="img-fluid rounded">
+    <div class="container">
+        <div class="row" style="text-align: center;">
+            <h2>FP-Growth VS Apriori</h2>
+        </div>
+        <div class="row">
+            <h3>FP-Growth Heatmap</h3>
+            <div>
+                <img src="data:image/png;base64,{{ heatmap_url_fp }}" class="img-fluid" alt="FP-Growth Heatmap">
+            </div>
+        </div>
+        <div class="row">
+            <h2>FP-Growth Network Graph</h2>
+        </div>
+        <div class="row">
+            <div>
+                <img src="data:image/png;base64,{{ graph_url_fp }}" class="img-fluid" alt="FP-Growth Network Graph">
             </div>
         </div>
     </div>
 
-    <div class="mb-5">
-        <h5 class="mb-3">Correlation Heatmap</h5>
-        <div class="card shadow-sm">
-            <div class="card-body text-center">
-                <img src="data:image/png;base64,{{ heatmap_url }}" alt="Correlation Heatmap" class="img-fluid rounded">
+    <div class="container">
+        <div class="row">
+            <h2>Apriori Heatmap</h2>
+        </div>
+        <div class="row">
+            <div>
+                <img src="data:image/png;base64,{{ heatmap_url_apriori }}" class="img-fluid" alt="Apriori Heatmap">
+            </div>
+        </div>
+        <div class="row">
+            <h2>Apriori Network Graph</h2>
+        </div>
+        <div class="row">
+            <div>
+                <img src="data:image/png;base64,{{ graph_url_apriori }}" class="img-fluid" alt="Apriori Network Graph">
             </div>
         </div>
     </div>
-</div>
+    
+
+    <div class="text-center">
+        <a href="/" class="btn btn-primary">Kembali ke Menu Utama</a>
+    </div>
 {% endblock %}
