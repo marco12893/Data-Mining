@@ -192,6 +192,8 @@ def cluster():
                            optimal_clusters=optimal_clusters,
                            active_page="cluster")
 
+
+
 @app.route('/classification')
 def classification():
     try:
@@ -205,7 +207,7 @@ def classification():
         # Pastikan semua kolom numerik
         df_cleaned = df.apply(pd.to_numeric, errors='coerce')
 
-        # Debug: meriksa dataset setelah encoding
+        # Debug: Meriksa dataset setelah encoding
         print(df_cleaned.dtypes)
         print(df_cleaned.head())
 
@@ -224,43 +226,60 @@ def classification():
         # Pisahkan data menjadi train-test split
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        # Melatih Decision Tree Classifier
-        model = DecisionTreeClassifier(random_state=42)
-        model.fit(X_train, y_train)
+        # Inisialisasi hasil
+        results = []
 
-        # Prediksi data uji
-        y_pred = model.predict(X_test)
+        # 1. Decision Tree
+        dt_model = DecisionTreeClassifier(random_state=42)
+        dt_model.fit(X_train, y_train)
+        dt_pred = dt_model.predict(X_test)
+        dt_report = classification_report(y_test, dt_pred, output_dict=True)
+        dt_cm = confusion_matrix(y_test, dt_pred)
+        results.append({
+            "model_name": "Decision Tree",
+            "report": dt_report,
+            "confusion_matrix": dt_cm
+        })
 
-        # Menghitung metrik evaluasi
-        report = classification_report(y_test, y_pred, output_dict=True)
-        cm = confusion_matrix(y_test, y_pred)
+        # 2. SVM
+        svm_model = SVC(kernel='rbf', C=1, gamma='scale', random_state=42)
+        svm_model.fit(X_train, y_train)
+        svm_pred = svm_model.predict(X_test)
+        svm_report = classification_report(y_test, svm_pred, output_dict=True)
+        svm_cm = confusion_matrix(y_test, svm_pred)
+        results.append({
+            "model_name": "Support Vector Machine (SVM)",
+            "report": svm_report,
+            "confusion_matrix": svm_cm
+        })
 
-        # Plot Confusion Matrix
-        plt.figure(figsize=(6, 4))
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False)
-        plt.title('Confusion Matrix')
-        plt.xlabel('Predicted')
-        plt.ylabel('Actual')
-
-        # Simpan plot sebagai gambar
-        img = io.BytesIO()
-        plt.savefig(img, format='png')
-        img.seek(0)
-        plot_url = base64.b64encode(img.getvalue()).decode()
-        plt.close()
+        # Membuat plot untuk setiap model
+        plot_urls = []
+        for result in results:
+            plt.figure(figsize=(6, 4))
+            sns.heatmap(result['confusion_matrix'], annot=True, fmt='d', cmap='Blues', cbar=False)
+            plt.title(f"Confusion Matrix ({result['model_name']})")
+            plt.xlabel('Predicted')
+            plt.ylabel('Actual')
+            img = io.BytesIO()
+            plt.savefig(img, format='png')
+            img.seek(0)
+            plot_url = base64.b64encode(img.getvalue()).decode()
+            plt.close()
+            plot_urls.append(plot_url)
 
         # Kirimkan hasil evaluasi ke template
         return render_template(
             'classification.html',
-            title="Classification",
-            header="Decision Tree Classification",
-            report=report,
-            plot_url=plot_url,
+            title="Classification Results",
+            results=results,
+            plot_urls=plot_urls,
             active_page="classification"
         )
 
     except Exception as e:
         return f"ERROR: {str(e)}", 500
+
 
 @app.route('/association')
 def association():
