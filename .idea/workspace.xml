@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b71fd62b-bee9-4853-8fda-f9f2872da04b" name="Changes" comment="deteksi anomali BERES cuy">
+    <list default="true" id="b71fd62b-bee9-4853-8fda-f9f2872da04b" name="Changes" comment="klasifikasi BERES cuy">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Data Mining/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/Data Mining/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Data Mining/templates/association.html" beforeDir="false" afterPath="$PROJECT_DIR$/Data Mining/templates/association.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -165,7 +166,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736082904264</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="klasifikasi BERES cuy">
+      <option name="closed" value="true" />
+      <created>1736131642270</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1736131642270</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -189,6 +198,7 @@
     <MESSAGE value="fix bug" />
     <MESSAGE value="prediksi hampir selesai, cuma perlu di betulin outputnya" />
     <MESSAGE value="deteksi anomali BERES cuy" />
-    <option name="LAST_COMMIT_MESSAGE" value="deteksi anomali BERES cuy" />
+    <MESSAGE value="klasifikasi BERES cuy" />
+    <option name="LAST_COMMIT_MESSAGE" value="klasifikasi BERES cuy" />
   </component>
 </project>
