@@ -4,7 +4,7 @@ import pandas as pd
 from pyexpat import model
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder
 from sklearn.metrics import silhouette_score, classification_report, confusion_matrix
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.decomposition import PCA
@@ -155,7 +155,74 @@ def cluster():
                            optimal_clusters=optimal_clusters)
 
 
-# @app.route('/classification')
+@app.route('/classification')
+def classification():
+    try:
+        # Identifikasi kolom string dan kategori
+        for column in df.columns:
+            if df[column].dtype == 'object' or df[column].dtype == 'category':
+                print(f"Encoding column: {column}")
+                label_encoder = LabelEncoder()
+                df[column] = label_encoder.fit_transform(df[column].astype(str))
+
+        # Pastikan semua kolom numerik
+        df_cleaned = df.apply(pd.to_numeric, errors='coerce')
+
+        # Debug: Periksa dataset setelah encoding
+        print(df_cleaned.dtypes)
+        print(df_cleaned.head())
+
+        # Membuat kolom target 'High Data Usage'
+        if 'High Data Usage' not in df_cleaned.columns:
+            df_cleaned['High Data Usage'] = (df_cleaned['Data Usage (MB/day)'] > 1000).astype(int)
+
+        # Pisahkan fitur (X) dan target (y)
+        X = df_cleaned.drop(['High Data Usage'], axis=1)
+        y = df_cleaned['High Data Usage']
+
+        # Debug: Periksa data input model
+        print("Features (X):", X.head())
+        print("Target (y):", y.head())
+
+        # Pisahkan data menjadi train-test split
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Melatih Decision Tree Classifier
+        model = DecisionTreeClassifier(random_state=42)
+        model.fit(X_train, y_train)
+
+        # Prediksi data uji
+        y_pred = model.predict(X_test)
+
+        # Menghitung metrik evaluasi
+        report = classification_report(y_test, y_pred, output_dict=True)
+        cm = confusion_matrix(y_test, y_pred)
+
+        # Plot Confusion Matrix
+        plt.figure(figsize=(6, 4))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False)
+        plt.title('Confusion Matrix')
+        plt.xlabel('Predicted')
+        plt.ylabel('Actual')
+
+        # Simpan plot sebagai gambar
+        img = io.BytesIO()
+        plt.savefig(img, format='png')
+        img.seek(0)
+        plot_url = base64.b64encode(img.getvalue()).decode()
+        plt.close()
+
+        # Kirimkan hasil evaluasi ke template
+        return render_template(
+            'classification.html',
+            title="Classification",
+            header="Decision Tree Classification",
+            report=report,
+            plot_url=plot_url
+        )
+
+    except Exception as e:
+        return f"MMF EROR LG NGAB: {str(e)}", 500
 #bentar ya ges menyusul, msh revisi
 
 # @app.route('/association')
