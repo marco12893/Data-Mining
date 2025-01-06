@@ -546,14 +546,15 @@ def deteksi():
         # Statistik untuk range Non-Anomali
         non_anomalies = df[df["anomaly"] == 1]
         stats = non_anomalies[features].agg(["mean", "std", "min", "max"]).T
-        stats["normal_range_min"] = stats["mean"] - 2 * stats["std"]
-        stats["normal_range_max"] = stats["mean"] + 2 * stats["std"]
+        deviation = 1.4
+        stats["normal_range_min"] = stats["mean"] - deviation * stats["std"]
+        stats["normal_range_max"] = stats["mean"] + deviation * stats["std"]
 
         for feature in features:
          if stats.loc[feature, "min"] >= 0:  # Jika negatif, maka akan diset ke 0
             stats.loc[feature, "normal_range_min"] = max(0, stats.loc[feature, "normal_range_min"])
 
-        # Analisis penyebab anomali
+
         for idx, row in df.iterrows():
             if row["anomaly"] == -1:  # Hanya untuk anomali
                 log_details = []
@@ -584,7 +585,6 @@ def deteksi():
         title="Deteksi Anomali",
         header="Deteksi Perilaku Pengguna Tidak Normal",
     )
-
 
 if __name__ == '__main__':
     app.run(debug=True)
