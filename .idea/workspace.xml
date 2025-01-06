@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b71fd62b-bee9-4853-8fda-f9f2872da04b" name="Changes" comment="hapus code bermasalah">
+    <list default="true" id="b71fd62b-bee9-4853-8fda-f9f2872da04b" name="Changes" comment="benerin output prediksi baterai">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Data Mining/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/Data Mining/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Data Mining/templates/deteksi.html" beforeDir="false" afterPath="$PROJECT_DIR$/Data Mining/templates/deteksi.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -197,7 +197,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736142856054</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="benerin output prediksi baterai">
+      <option name="closed" value="true" />
+      <created>1736160800757</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1736160800757</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -225,6 +233,7 @@
     <MESSAGE value="semua BERES cuy" />
     <MESSAGE value="sidebar update" />
     <MESSAGE value="hapus code bermasalah" />
-    <option name="LAST_COMMIT_MESSAGE" value="hapus code bermasalah" />
+    <MESSAGE value="benerin output prediksi baterai" />
+    <option name="LAST_COMMIT_MESSAGE" value="benerin output prediksi baterai" />
   </component>
 </project>
