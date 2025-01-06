@@ -2,8 +2,8 @@ import numpy as np
 from flask import Flask, request, jsonify, render_template
 import pandas as pd
 from pyexpat import model
-from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder
 from sklearn.metrics import silhouette_score, classification_report, confusion_matrix
 from sklearn.tree import DecisionTreeClassifier
@@ -13,7 +13,6 @@ import seaborn as sns
 import io
 import base64
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
 import joblib
 from sklearn.ensemble import IsolationForest
 from mlxtend.frequent_patterns import fpgrowth, apriori
@@ -46,11 +45,14 @@ def train_model():
     joblib.dump(scaler, 'scaler.pkl')
 
     # Train a RandomForestRegressor
-    model = RandomForestRegressor(n_estimators=100, random_state=42)
-    model.fit(X_train_scaled, y_train)
+    rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
+    rf_model.fit(X_train_scaled, y_train)
+    joblib.dump(rf_model, 'rf_model.pkl')
 
-    # Save the trained model
-    joblib.dump(model, 'model.pkl')
+    # Train a LinearRegression model
+    lr_model = LinearRegression()
+    lr_model.fit(X_train_scaled, y_train)
+    joblib.dump(lr_model, 'lr_model.pkl')
     print("Model has been saved as 'model.pkl' and scaler as 'scaler.pkl'")
 # Train the model when the app starts
 train_model()
@@ -524,6 +526,7 @@ def prediksi():
             data_usage = float(request.form['data_usage'])
             num_apps_installed = int(request.form['num_apps_installed'])
             age = int(request.form['age'])
+            algorithm = request.form['algorithm']  # Algoritma yang dipilih oleh pengguna
 
             # Preprocess input
             input_data = pd.DataFrame({
@@ -536,7 +539,12 @@ def prediksi():
 
             # Load scaler dan model
             scaler = joblib.load('scaler.pkl')
-            model = joblib.load('model.pkl')
+            if algorithm == 'random_forest':
+                model = joblib.load('rf_model.pkl')
+            elif algorithm == 'linear_regression':
+                model = joblib.load('lr_model.pkl')
+            else:
+                return "Invalid algorithm selected.", 400
 
             # Scale input data
             input_data_scaled = scaler.transform(input_data)
@@ -551,6 +559,7 @@ def prediksi():
                 title="Prediksi Konsumsi Baterai",
                 header="Prediksi Konsumsi Baterai",
                 prediction=first_prediction,
+                algorithm=algorithm,
                 active_page="prediksi"
             )
         except Exception as e:

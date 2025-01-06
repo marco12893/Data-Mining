@@ -11,7 +11,6 @@
             <label for="screen_on_time" class="form-label">Screen On Time (hours/day):</label>
             <input type="number" class="form-control" id="screen_on_time" name="screen_on_time" step="any" required>
         </div>
-
         <div class="mb-3">
             <label for="data_usage" class="form-label">Data Usage (MB/day):</label>
             <input type="number" class="form-control" id="data_usage" name="data_usage" required>
@@ -24,10 +23,27 @@
             <label for="age" class="form-label">Age:</label>
             <input type="number" class="form-control" id="age" name="age" required>
         </div>
+
+        <div class="mb-3">
+            <label for="algorithm" class="form-label">Choose Algorithm:</label>
+            <select class="form-control" id="algorithm" name="algorithm" required>
+                <option value="random_forest">Random Forest</option>
+                <option value="linear_regression">Linear Regression</option>
+            </select>
+        </div>
+
         <button type="submit" class="btn btn-primary">Prediksi</button>
     </form>
 
     {% if prediction %}
-        <h2 class="mt-4">Prediksi Konsumsi Baterai: {{ prediction }} mAh/day</h2>
+        <h2 class="mt-4">Prediksi Konsumsi Baterai ({{ algorithm }}): {{ prediction }} mAh/day</h2>
+    {% endif %}
+
+    {% if rf_prediction %}
+        <h2 class="mt-4">Prediksi dengan Random Forest: {{ rf_prediction }} mAh/day</h2>
+    {% endif %}
+
+    {% if lr_prediction %}
+        <h2 class="mt-4">Prediksi dengan Linear Regression: {{ lr_prediction }} mAh/day</h2>
     {% endif %}
 {% endblock %}
