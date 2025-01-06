@@ -227,7 +227,6 @@ def classification():
 
     except Exception as e:
         return f"ERROR: {str(e)}", 500
-#bentar ya ges menyusul, msh revisi
 
 @app.route('/association')
 def association():
