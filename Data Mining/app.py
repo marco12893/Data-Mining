@@ -172,7 +172,7 @@ def classification():
         # Pastikan semua kolom numerik
         df_cleaned = df.apply(pd.to_numeric, errors='coerce')
 
-        # Debug: Periksa dataset setelah encoding
+        # Debug: meriksa dataset setelah encoding
         print(df_cleaned.dtypes)
         print(df_cleaned.head())
 
@@ -226,7 +226,7 @@ def classification():
         )
 
     except Exception as e:
-        return f"MMF EROR LG NGAB: {str(e)}", 500
+        return f"ERROR: {str(e)}", 500
 #bentar ya ges menyusul, msh revisi
 
 @app.route('/association')
