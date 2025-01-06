@@ -21,15 +21,11 @@ from mlxtend.frequent_patterns import association_rules
 import networkx as nx
 from sklearn.cluster import KMeans, AgglomerativeClustering
 from scipy.cluster.hierarchy import dendrogram, linkage
-
+from sklearn.svm import SVC
 
 
 app = Flask(__name__)
 df = pd.read_csv('user_behavior_dataset.csv')
-
-
-# Setup logging
-logging.basicConfig(level=logging.INFO)
 
 # Preprocessing data and training model
 def train_model():

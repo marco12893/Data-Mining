@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b71fd62b-bee9-4853-8fda-f9f2872da04b" name="Changes" comment="cluster done">
+    <list default="true" id="b71fd62b-bee9-4853-8fda-f9f2872da04b" name="Changes" comment="prediksi done">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Data Mining/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/Data Mining/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Data Mining/templates/prediksi.html" beforeDir="false" afterPath="$PROJECT_DIR$/Data Mining/templates/prediksi.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -222,7 +220,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736172578477</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="prediksi done">
+      <option name="closed" value="true" />
+      <created>1736173282081</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1736173282086</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -253,6 +259,7 @@
     <MESSAGE value="benerin output prediksi baterai" />
     <MESSAGE value="minor fix" />
     <MESSAGE value="cluster done" />
-    <option name="LAST_COMMIT_MESSAGE" value="cluster done" />
+    <MESSAGE value="prediksi done" />
+    <option name="LAST_COMMIT_MESSAGE" value="prediksi done" />
   </component>
 </project>
