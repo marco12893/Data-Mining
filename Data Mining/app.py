@@ -523,7 +523,6 @@ def prediksi():
 
 @app.route("/deteksi", methods=["GET", "POST"])
 def deteksi():
-    # Pilih kolom numerik yang relevan
     features = [
         "App Usage Time (min/day)",
         "Screen On Time (hours/day)",
@@ -541,19 +540,32 @@ def deteksi():
         iso_forest = IsolationForest(contamination=0.05, random_state=42)
         anomaly_labels = iso_forest.fit_predict(X_scaled)
 
-        # Tambahkan label ke dataset
+        # Tambahkan label anomaly ke dataset
         df["anomaly"] = anomaly_labels
 
+        # Statistik untuk range Non-Anomali
+        non_anomalies = df[df["anomaly"] == 1]
+        stats = non_anomalies[features].agg(["mean", "std", "min", "max"]).T
+        stats["normal_range_min"] = stats["mean"] - 2 * stats["std"]
+        stats["normal_range_max"] = stats["mean"] + 2 * stats["std"]
+
+        for feature in features:
+         if stats.loc[feature, "min"] >= 0:  # Jika negatif, maka akan diset ke 0
+            stats.loc[feature, "normal_range_min"] = max(0, stats.loc[feature, "normal_range_min"])
+
         # Analisis penyebab anomali
-        df["log"] = ""
         for idx, row in df.iterrows():
             if row["anomaly"] == -1:  # Hanya untuk anomali
-                deviations = (row[features] - X.mean()) / X.std()  # Deviasi
-                high_deviation = deviations[abs(deviations) > 2]  # Threshold deviasi
-                reasons = ", ".join(
-                    f"{feature} ({row[feature]:.2f})" for feature in high_deviation.index
-                )
-                df.at[idx, "log"] = f"Anomali karena: {reasons}"
+                log_details = []
+                for feature in features:
+                    normal_min = stats.loc[feature, "normal_range_min"]
+                    normal_max = stats.loc[feature, "normal_range_max"]
+                    if not (normal_min <= row[feature] <= normal_max):
+                        log_details.append(f"{feature} ({row[feature]:.2f})")
+                if log_details:
+                    df.at[idx, "Log"] = f"Anomali karena: {', '.join(log_details)}"
+                else:
+                    df.at[idx, "Log"] = "Anomali berdasarkan kombinasi fitur."
 
         # Filter data anomali
         anomalies = df[df["anomaly"] == -1]
@@ -563,15 +575,16 @@ def deteksi():
             title="Deteksi Anomali",
             header="Hasil Deteksi Anomali",
             anomalies=anomalies.to_dict(orient="records"),
-            columns=anomalies.columns,
+            columns=df.columns,
+            stats=stats.to_dict(orient="index"),  # Kirim statistik
         )
 
     return render_template(
         "deteksi.html",
         title="Deteksi Anomali",
         header="Deteksi Perilaku Pengguna Tidak Normal",
-        active_page="deteksi"
     )
+
 
 if __name__ == '__main__':
     app.run(debug=True)
