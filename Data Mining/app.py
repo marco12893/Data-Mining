@@ -19,6 +19,8 @@ from sklearn.ensemble import IsolationForest
 from mlxtend.frequent_patterns import fpgrowth, apriori
 from mlxtend.frequent_patterns import association_rules
 import networkx as nx
+from sklearn.cluster import KMeans, AgglomerativeClustering
+from scipy.cluster.hierarchy import dendrogram, linkage
 
 
 app = Flask(__name__)
@@ -99,56 +101,94 @@ def cluster():
     plt.grid(True)
 
     # Simpen plot ke objek BytesIO dan encode ke base64
-    img = io.BytesIO()
-    plt.savefig(img, format='png')
-    img.seek(0)
-    plot_url = base64.b64encode(img.getvalue()).decode()
+    elbow_img = io.BytesIO()
+    plt.savefig(elbow_img, format='png')
+    elbow_img.seek(0)
+    elbow_plot_url = base64.b64encode(elbow_img.getvalue()).decode()
     plt.close()
 
     # K-means clustering dengan 5 cluster
     optimal_clusters = 5
     kmeans = KMeans(n_clusters=optimal_clusters, random_state=42)
-    df_normalized['Cluster'] = kmeans.fit_predict(df_normalized)
+    df_normalized['KMeans_Cluster'] = kmeans.fit_predict(df_normalized)
 
     # Evaluasi pakai silhouette score
-    silhouette_avg = silhouette_score(df_normalized, df_normalized['Cluster'])
+    silhouette_avg_kmeans = silhouette_score(df_normalized, df_normalized['KMeans_Cluster'])
+
+    # Hierarchical Clustering
+    hierarchical = AgglomerativeClustering(n_clusters=optimal_clusters, linkage='ward', metric='euclidean')
+    df_normalized['Hierarchical_Cluster'] = hierarchical.fit_predict(df_normalized)
+
+    # Evaluasi pakai silhouette score
+    silhouette_avg_hierarchical = silhouette_score(df_normalized, df_normalized['Hierarchical_Cluster'])
+
+    # Dendrogram untuk Hierarchical Clustering
+    plt.figure(figsize=(10, 7))
+    linked = linkage(df_normalized, method='ward')
+    dendrogram(linked)
+    plt.title('Hierarchical Clustering Dendrogram')
+    plt.xlabel('Data Points')
+    plt.ylabel('Euclidean Distance')
+
+    dendrogram_img = io.BytesIO()
+    plt.savefig(dendrogram_img, format='png')
+    dendrogram_img.seek(0)
+    dendrogram_plot_url = base64.b64encode(dendrogram_img.getvalue()).decode()
+    plt.close()
 
     # Reduksi dimensi dengan pca untuk visualisasi
     pca = PCA(n_components=2)
-    X_pca = pca.fit_transform(df_normalized)
-    df_normalized['PCA1'], df_normalized['PCA2'] = X_pca[:, 0], X_pca[:, 1]
+    pca_results = pca.fit_transform(df_normalized)
+    df_normalized['PCA1'] = pca_results[:, 0]
+    df_normalized['PCA2'] = pca_results[:, 1]
 
-    # Visualisasi clustering pakai scatter plot
+    # Scatter plot untuk K-Means
     plt.figure(figsize=(8, 5))
-    scatter = plt.scatter(df_normalized['PCA1'], df_normalized['PCA2'],
-                          c=df_normalized['Cluster'], cmap='viridis', s=50)
+    plt.scatter(df_normalized['PCA1'], df_normalized['PCA2'],
+                c=df_normalized['KMeans_Cluster'], cmap='viridis', s=50)
     plt.title('K-Means Clustering Results')
     plt.xlabel('PCA1')
     plt.ylabel('PCA2')
     plt.grid(True)
 
-    # Simpen scatter plot ke objek BytesIO dan encode ke base64
-    img2 = io.BytesIO()
-    plt.savefig(img2, format='png')
-    img2.seek(0)
-    cluster_plot_url = base64.b64encode(img2.getvalue()).decode()
+    kmeans_img = io.BytesIO()
+    plt.savefig(kmeans_img, format='png')
+    kmeans_img.seek(0)
+    kmeans_plot_url = base64.b64encode(kmeans_img.getvalue()).decode()
     plt.close()
 
-    # Menyusun hasil evaluasi dan plot untuk dikirim ke template
+    # Scatter plot untuk Hierarchical Clustering
+    plt.figure(figsize=(8, 5))
+    plt.scatter(df_normalized['PCA1'], df_normalized['PCA2'],
+                c=df_normalized['Hierarchical_Cluster'], cmap='viridis', s=50)
+    plt.title('Hierarchical Clustering Results')
+    plt.xlabel('PCA1')
+    plt.ylabel('PCA2')
+    plt.grid(True)
+
+    hierarchical_img = io.BytesIO()
+    plt.savefig(hierarchical_img, format='png')
+    hierarchical_img.seek(0)
+    hierarchical_plot_url = base64.b64encode(hierarchical_img.getvalue()).decode()
+    plt.close()
+
+    # Hasil evaluasi
     evaluation = {
-        'Silhouette Score': silhouette_avg,
+        'Silhouette Score (K-Means)': silhouette_avg_kmeans,
+        'Silhouette Score (Hierarchical)': silhouette_avg_hierarchical,
         'SSE': sse
     }
 
     return render_template('cluster.html',
                            title="Clustering",
-                           header="Clustering",
-                           plot_url=plot_url,
-                           cluster_plot_url=cluster_plot_url,
+                           header="Clustering Results",
+                           elbow_plot_url=elbow_plot_url,
+                           kmeans_plot_url=kmeans_plot_url,
+                           hierarchical_plot_url=hierarchical_plot_url,
+                           dendrogram_plot_url=dendrogram_plot_url,
                            evaluation=evaluation,
                            optimal_clusters=optimal_clusters,
                            active_page="cluster")
-
 
 @app.route('/classification')
 def classification():

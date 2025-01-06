@@ -6,10 +6,12 @@
         <div class="col-md-4 mb-4">
             <div class="card shadow-sm text-white bg-primary">
                 <div class="card-header text-center">
-                    <strong>Silhouette Score</strong>
+                    <strong>Silhouette Score (K-Means)</strong>
                 </div>
                 <div class="card-body text-center">
-                    <h3 class="card-title">{{ evaluation["Silhouette Score"] | round(3) }}</h3>
+                    <h3 class="card-title">
+                        {{ evaluation["Silhouette Score (K-Means)"] | default(0) | round(3) }}
+                    </h3>
                 </div>
             </div>
         </div>
@@ -17,10 +19,23 @@
         <div class="col-md-4 mb-4">
             <div class="card shadow-sm text-white bg-success">
                 <div class="card-header text-center">
-                    <strong>Optimal Clusters</strong>
+                    <strong>Optimal Clusters (K-Means)</strong>
                 </div>
                 <div class="card-body text-center">
-                    <h3 class="card-title">{{ optimal_clusters }}</h3>
+                    <h3 class="card-title">{{ optimal_clusters | default("N/A") }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm text-white bg-secondary">
+                <div class="card-header text-center">
+                    <strong>Silhouette Score (Hierarchical)</strong>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="card-title">
+                        {{ evaluation["Silhouette Score (Hierarchical)"] | default(0) | round(3) }}
+                    </h3>
                 </div>
             </div>
         </div>
@@ -30,14 +45,14 @@
         <div class="col-md-12">
             <div class="card shadow-sm text-white bg-info">
                 <div class="card-header text-center">
-                    <strong>SSE Values 1-5</strong>
+                    <strong>SSE Values 1-5 (K-Means)</strong>
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         {% for s in evaluation["SSE"][:5] %}
                             <div class="p-2 flex-fill text-center">
                                 <div class="alert alert-secondary mb-0">
-                                    <strong>Cluster {{ loop.index }}:</strong> {{ s | round(2) }}
+                                    <strong>Cluster {{ loop.index }}:</strong> {{ s | default(0) | round(2) }}
                                 </div>
                             </div>
                         {% endfor %}
@@ -51,14 +66,14 @@
         <div class="col-md-12">
             <div class="card shadow-sm text-white bg-info">
                 <div class="card-header text-center">
-                    <strong>SSE Values 6-10</strong>
+                    <strong>SSE Values 6-10 (K-Means)</strong>
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         {% for s in evaluation["SSE"][5:10] %}
                             <div class="p-2 flex-fill text-center">
                                 <div class="alert alert-secondary mb-0">
-                                    <strong>Cluster {{ loop.index + 5 }}:</strong> {{ s | round(2) }}
+                                    <strong>Cluster {{ loop.index + 5 }}:</strong> {{ s | default(0) | round(2) }}
                                 </div>
                             </div>
                         {% endfor %}
@@ -69,19 +84,37 @@
     </div>
 
     <div class="mb-5">
-        <h5 class="mb-3">Elbow Method Plot</h5>
+        <h5 class="mb-3">Elbow Method Plot (K-Means)</h5>
         <div class="card shadow-sm">
             <div class="card-body">
-                <img src="data:image/png;base64,{{ plot_url }}" alt="Elbow Method Plot" class="img-fluid rounded">
+                <img src="data:image/png;base64,{{ elbow_plot_url | default() }}" alt="Elbow Method Plot" class="img-fluid rounded">
             </div>
         </div>
     </div>
 
-    <div>
-        <h5 class="mb-3">Clustering Scatter Plot</h5>
+    <div class="mb-5">
+        <h5 class="mb-3">Clustering Scatter Plot (K-Means)</h5>
         <div class="card shadow-sm">
             <div class="card-body">
-                <img src="data:image/png;base64,{{ cluster_plot_url }}" alt="Clustering Scatter Plot" class="img-fluid rounded">
+                <img src="data:image/png;base64,{{ kmeans_plot_url | default() }}" alt="Clustering Scatter Plot" class="img-fluid rounded">
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-5">
+        <h5 class="mb-3">Dendrogram (Hierarchical Clustering)</h5>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <img src="data:image/png;base64,{{ dendrogram_plot_url | default() }}" alt="Dendrogram" class="img-fluid rounded">
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-5">
+        <h5 class="mb-3">Clustering Scatter Plot (Hierarchical Clustering)</h5>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <img src="data:image/png;base64,{{ hierarchical_plot_url | default() }}" alt="Clustering Scatter Plot" class="img-fluid rounded">
             </div>
         </div>
     </div>

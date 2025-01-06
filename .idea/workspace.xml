@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b71fd62b-bee9-4853-8fda-f9f2872da04b" name="Changes" comment="benerin output prediksi baterai">
+    <list default="true" id="b71fd62b-bee9-4853-8fda-f9f2872da04b" name="Changes" comment="cluster done">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Data Mining/templates/deteksi.html" beforeDir="false" afterPath="$PROJECT_DIR$/Data Mining/templates/deteksi.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Data Mining/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/Data Mining/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Data Mining/templates/cluster.html" beforeDir="false" afterPath="$PROJECT_DIR$/Data Mining/templates/cluster.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -205,7 +206,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736160800757</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="minor fix">
+      <option name="closed" value="true" />
+      <created>1736169243248</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1736169243248</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -234,6 +243,8 @@
     <MESSAGE value="sidebar update" />
     <MESSAGE value="hapus code bermasalah" />
     <MESSAGE value="benerin output prediksi baterai" />
-    <option name="LAST_COMMIT_MESSAGE" value="benerin output prediksi baterai" />
+    <MESSAGE value="minor fix" />
+    <MESSAGE value="cluster done" />
+    <option name="LAST_COMMIT_MESSAGE" value="cluster done" />
   </component>
 </project>
