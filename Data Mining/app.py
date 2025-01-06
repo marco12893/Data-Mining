@@ -24,15 +24,6 @@ import networkx as nx
 app = Flask(__name__)
 df = pd.read_csv('user_behavior_dataset.csv')
 
-# Data Preprocessing for Association Route
-def preprocess_data(data):
-    data.columns = data.columns.str.lower().str.replace(' ', '_').str.replace(r'\(.*?\)', '', regex=True).str.strip('_')
-    data = data.drop(columns=['user_id', 'user_behavior_class'], errors='ignore')
-    return data
-
-# data = preprocess_data(df)
-# Code ini kalau dijalanin bakal ngerusak codeku
-
 # Preprocessing data and training model
 def train_model():
     # Select relevant columns
