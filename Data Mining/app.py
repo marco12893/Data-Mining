@@ -645,14 +645,24 @@ def deteksi():
         # Filter data anomali
         anomalies = df[df["Anomaly"] == -1]
 
-        return render_template(
-            "deteksi.html",
-            title="Deteksi Anomali",
-            header="Hasil Deteksi Anomali",
-            anomalies=anomalies.to_dict(orient="records"),
-            columns=df.columns,
-            stats=stats.to_dict(orient="index"),  # Kirim statistik
-        )
+         if method == "isolation_forest":
+            return render_template(
+                "deteksi.html",
+                title="Deteksi Anomali",
+                header=headerIso,
+                anomalies=anomalies.to_dict(orient="records"),
+                columns=df.columns,
+                stats=stats.to_dict(orient="index"),  # Kirim statistik
+            )
+        else:
+            return render_template(
+                "deteksi.html",
+                title="Deteksi Anomali",
+                header=headerLOF,
+                anomalies=anomalies.to_dict(orient="records"),
+                columns=df.columns,
+                stats=stats.to_dict(orient="index"),  # Kirim statistik
+            )
 
     return render_template(
         "deteksi.html",
