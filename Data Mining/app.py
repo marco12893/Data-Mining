@@ -28,29 +28,28 @@ df = pd.read_csv('user_behavior_dataset.csv')
 def train_model():
     # Select relevant columns
     columns_to_use = ['App Usage Time (min/day)', 'Screen On Time (hours/day)',
-                      'Battery Drain (mAh/day)', 'Data Usage (MB/day)',
-                      'Number of Apps Installed', 'Age']  # You can change or add more columns as needed
-
-    # Features (X) and target (y)
+                      'Data Usage (MB/day)', 'Number of Apps Installed', 'Age']
     X = df[columns_to_use]
-    y = df['Battery Drain (mAh/day)']  # Assuming we're predicting battery drain
+    y = df['Battery Drain (mAh/day)']
 
-    # Splitting the dataset into training and testing sets
+    # Splitting dataset
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Scaling features using MinMaxScaler
+    # Scaling features
     scaler = MinMaxScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    # Train a RandomForestRegressor model
+    # Save scaler for future use
+    joblib.dump(scaler, 'scaler.pkl')
+
+    # Train a RandomForestRegressor
     model = RandomForestRegressor(n_estimators=100, random_state=42)
     model.fit(X_train_scaled, y_train)
 
-    # Save the trained model to a file
+    # Save the trained model
     joblib.dump(model, 'model.pkl')
-    print("Model has been saved as 'model.pkl'")
-
+    print("Model has been saved as 'model.pkl' and scaler as 'scaler.pkl'")
 # Train the model when the app starts
 train_model()
 
@@ -479,38 +478,40 @@ def association():
 def prediksi():
     if request.method == 'POST':
         try:
-            # Mengambil input dari form, tanpa input untuk battery drain
+            # Ambil input dari form
             app_usage_time = float(request.form['app_usage_time'])
             screen_on_time = float(request.form['screen_on_time'])
             data_usage = float(request.form['data_usage'])
             num_apps_installed = int(request.form['num_apps_installed'])
             age = int(request.form['age'])
 
-            # Preprocess input menjadi data yang sesuai
+            # Preprocess input
             input_data = pd.DataFrame({
                 'App Usage Time (min/day)': [app_usage_time],
                 'Screen On Time (hours/day)': [screen_on_time],
-                'Battery Drain (mAh/day)': [0],  # Menambahkan nilai default untuk fitur yang hilang
                 'Data Usage (MB/day)': [data_usage],
                 'Number of Apps Installed': [num_apps_installed],
                 'Age': [age]
             })
 
-            # Load model yang sudah disimpan
+            # Load scaler dan model
+            scaler = joblib.load('scaler.pkl')
             model = joblib.load('model.pkl')
 
-            # Prediksi konsumsi baterai (battery drain)
-            prediction = model.predict(input_data)
+            # Scale input data
+            input_data_scaled = scaler.transform(input_data)
 
-            # Tampilkan hasil prediksi
+            # Prediksi konsumsi baterai
+            prediction = model.predict(input_data_scaled)
             first_prediction = round(prediction[0], 2)
 
+            # Tampilkan hasil prediksi
             return render_template(
                 'prediksi.html',
                 title="Prediksi Konsumsi Baterai",
                 header="Prediksi Konsumsi Baterai",
                 prediction=first_prediction,
-                active_page = "prediksi"
+                active_page="prediksi"
             )
         except Exception as e:
             return f"Error occurred: {str(e)}", 400
@@ -518,6 +519,7 @@ def prediksi():
                            title="Prediksi Konsumsi Baterai",
                            header="Prediksi Konsumsi Baterai",
                            active_page="prediksi")
+
 
 @app.route("/deteksi", methods=["GET", "POST"])
 def deteksi():
