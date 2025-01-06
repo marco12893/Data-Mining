@@ -70,7 +70,7 @@ def layout():
 @app.route('/')
 def home():
     print("Flask app running...")
-    return render_template('index.html', title="Home", header="Welcome to Flask")
+    return render_template('index.html', title="Home", header="Welcome to Flask", active_page="home")
 
 @app.route('/about')
 def about():
@@ -156,7 +156,8 @@ def cluster():
                            plot_url=plot_url,
                            cluster_plot_url=cluster_plot_url,
                            evaluation=evaluation,
-                           optimal_clusters=optimal_clusters)
+                           optimal_clusters=optimal_clusters,
+                           active_page="cluster")
 
 
 @app.route('/classification')
@@ -222,7 +223,8 @@ def classification():
             title="Classification",
             header="Decision Tree Classification",
             report=report,
-            plot_url=plot_url
+            plot_url=plot_url,
+            active_page="classification"
         )
 
     except Exception as e:
@@ -478,7 +480,8 @@ def association():
                            dvm2_url = dvm2_url,
                            dvm3_url = dvm3_url,
                            gender_url = gender_url,
-                           age_url = age_url)
+                           age_url = age_url,
+                           active_page="association")
 
 
 @app.route('/prediksi', methods=['GET', 'POST'])
@@ -515,11 +518,15 @@ def prediksi():
                 'prediksi.html',
                 title="Prediksi Konsumsi Baterai",
                 header="Prediksi Konsumsi Baterai",
-                prediction=first_prediction
+                prediction=first_prediction,
+                active_page = "prediksi"
             )
         except Exception as e:
             return f"Error occurred: {str(e)}", 400
-    return render_template('prediksi.html', title="Prediksi Konsumsi Baterai", header="Prediksi Konsumsi Baterai")
+    return render_template('prediksi.html',
+                           title="Prediksi Konsumsi Baterai",
+                           header="Prediksi Konsumsi Baterai",
+                           active_page="prediksi")
 
 @app.route("/deteksi", methods=["GET", "POST"])
 def deteksi():
@@ -570,6 +577,7 @@ def deteksi():
         "deteksi.html",
         title="Deteksi Anomali",
         header="Deteksi Perilaku Pengguna Tidak Normal",
+        active_page="deteksi"
     )
 
 if __name__ == '__main__':

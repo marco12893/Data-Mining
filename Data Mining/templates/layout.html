@@ -50,12 +50,12 @@
     <div class="sidebar">
         <h5>User Behaviour Analysis</h5>
         <nav class="nav flex-column">
-            <a class="nav-link active" href="/">Menu</a>
-            <a class="nav-link" href="/classification">Mobile Device User Classification</a>
-            <a class="nav-link" href="/cluster">User Behaviour Clustering</a>
-            <a class="nav-link" href="/association">User and Device Analysis</a>
-            <a class="nav-link" href="/prediksi">Battery Consumption Prediction</a>
-            <a class="nav-link" href="/deteksi">Annomaly Detection</a>
+            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="/">Menu</a>
+            <a class="nav-link {% if active_page == 'classification' %}active{% endif %}" href="/classification">Mobile Device User Classification</a>
+            <a class="nav-link {% if active_page == 'cluster' %}active{% endif %}" href="/cluster">User Behaviour Clustering</a>
+            <a class="nav-link {% if active_page == 'association' %}active{% endif %}" href="/association">User and Device Analysis</a>
+            <a class="nav-link {% if active_page == 'prediksi' %}active{% endif %}" href="/prediksi">Battery Consumption Prediction</a>
+            <a class="nav-link {% if active_page == 'deteksi' %}active{% endif %}" href="/deteksi">Annomaly Detection</a>
         </nav>
     </div>
 
