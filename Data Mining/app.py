@@ -15,6 +15,7 @@ import base64
 from sklearn.ensemble import RandomForestRegressor
 import joblib
 from sklearn.ensemble import IsolationForest
+from sklearn.neighbors import LocalOutlierFactor
 from mlxtend.frequent_patterns import fpgrowth, apriori
 from mlxtend.frequent_patterns import association_rules
 import networkx as nx
@@ -22,8 +23,13 @@ from sklearn.cluster import KMeans, AgglomerativeClustering
 from scipy.cluster.hierarchy import dendrogram, linkage
 
 
+
 app = Flask(__name__)
 df = pd.read_csv('user_behavior_dataset.csv')
+
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
 
 # Preprocessing data and training model
 def train_model():
@@ -599,32 +605,36 @@ def deteksi():
         "Data Usage (MB/day)",
     ]
     if request.method == "POST":
-        # Normalisasi data
+        method = request.form.get("method")  # Pilihan metode
         X = df[features]
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
 
-        # Model Isolation Forest
-        iso_forest = IsolationForest(contamination=0.05, random_state=42)
-        anomaly_labels = iso_forest.fit_predict(X_scaled)
+        if method == "isolation_forest":
+            # Model Isolation Forest
+            model = IsolationForest(contamination=0.05, random_state=42)
+            anomaly_labels = model.fit_predict(X_scaled)
+        elif method == "lof":
+            # Model Local Outlier Factor
+            model = LocalOutlierFactor(n_neighbors=20, contamination=0.05, novelty=False)
+            anomaly_labels = model.fit_predict(X_scaled)  # LOF langsung mengembalikan label -1 atau 1
+        else:
+            return "Metode tidak valid!", 400
 
         # Tambahkan label anomaly ke dataset
-        df["anomaly"] = anomaly_labels
+        df["Anomaly"] = anomaly_labels
 
         # Statistik untuk range Non-Anomali
-        non_anomalies = df[df["anomaly"] == 1]
+        non_anomalies = df[df["Anomaly"] == 1]
         stats = non_anomalies[features].agg(["mean", "std", "min", "max"]).T
         deviation = 1.4
         stats["normal_range_min"] = stats["mean"] - deviation * stats["std"]
         stats["normal_range_max"] = stats["mean"] + deviation * stats["std"]
 
-        for feature in features:
-         if stats.loc[feature, "min"] >= 0:  # Jika negatif, maka akan diset ke 0
-            stats.loc[feature, "normal_range_min"] = max(0, stats.loc[feature, "normal_range_min"])
-
+        stats["normal_range_min"] = stats["normal_range_min"].apply(lambda x: max(0, x))
 
         for idx, row in df.iterrows():
-            if row["anomaly"] == -1:  # Hanya untuk anomali
+            if row["Anomaly"] == -1:  # Hanya untuk anomali
                 log_details = []
                 for feature in features:
                     normal_min = stats.loc[feature, "normal_range_min"]
@@ -632,12 +642,12 @@ def deteksi():
                     if not (normal_min <= row[feature] <= normal_max):
                         log_details.append(f"{feature} ({row[feature]:.2f})")
                 if log_details:
-                    df.at[idx, "Log"] = f"Anomali karena: {', '.join(log_details)}"
+                    df.at[idx, "Cause"] = f"Anomali karena: {', '.join(log_details)}"
                 else:
-                    df.at[idx, "Log"] = "Anomali berdasarkan kombinasi fitur."
+                    df.at[idx, "Cause"] = "Deviasi terlalu tinggi, sehingga anomali tidak dapat dideteksi"
 
         # Filter data anomali
-        anomalies = df[df["anomaly"] == -1]
+        anomalies = df[df["Anomaly"] == -1]
 
         return render_template(
             "deteksi.html",
