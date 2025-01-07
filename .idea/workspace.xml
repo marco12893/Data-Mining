@@ -4,8 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b71fd62b-bee9-4853-8fda-f9f2872da04b" name="Changes" comment="prediksi done">
+    <list default="true" id="b71fd62b-bee9-4853-8fda-f9f2872da04b" name="Changes" comment="semua done">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Data Mining/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/Data Mining/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Data Mining/templates/association.html" beforeDir="false" afterPath="$PROJECT_DIR$/Data Mining/templates/association.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -228,7 +230,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736173282086</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="semua done">
+      <option name="closed" value="true" />
+      <created>1736174795289</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1736174795289</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -260,6 +270,7 @@
     <MESSAGE value="minor fix" />
     <MESSAGE value="cluster done" />
     <MESSAGE value="prediksi done" />
-    <option name="LAST_COMMIT_MESSAGE" value="prediksi done" />
+    <MESSAGE value="semua done" />
+    <option name="LAST_COMMIT_MESSAGE" value="semua done" />
   </component>
 </project>
